@@ -1,13 +1,56 @@
-import React from 'react';
-import BckgroundImage from './application/components/BckgroundImage';
-import { Text } from "react-native";
+import React, {Component} from 'react';
+import PreLoader from './application/components/PreLoader';
+import GuestNavigation from './application/navigations/guest';
+import LoggedNavigation from './application/navigations/logged';
+import * as firebase from 'firebase';
+import firebaseConfig from './application/utils/firebase';
+firebase.initializeApp(firebaseConfig);
 
-export default function App() {
-  return (
-    <BckgroundImage
-      source={require('./assets/images/login-bg.png')}
-    >
-      <Text>Hola</Text>
-    </BckgroundImage>
-  );
+console.disableYellowBox = true;
+
+class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      isLogged: false,
+      loaded: false
+    };
+  }
+
+  async componentDidMount() {
+    // firebase.auth().signOut();
+
+    await firebase.auth().onAuthStateChanged((user) => {
+      if (user !== null) {
+        this.setState({
+          isLogged: true,
+          loaded: true
+        });
+      }
+      else {
+        this.setState({
+          isLogged: false,
+          loaded: true
+        });
+      }
+    });
+  }
+
+  render() {
+    const {isLogged, loaded} = this.state;
+
+    if (!loaded) {
+      return (<PreLoader/>);
+    }
+
+    if (isLogged) {
+      return (<LoggedNavigation/>);
+    }
+    else {
+      return(<GuestNavigation/>);
+    }
+
+  }
 }
+
+export default App;
